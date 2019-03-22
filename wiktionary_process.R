@@ -206,6 +206,13 @@ d6[, silbenzahl := silbenzahl + 1] # because syllable length is always
                                          # one more than there are separators.
 
 
+# where there is no singular, use plural syllabification instead
+d6[worttrennung_sg=="{{kSg.}}", worttrennung_pl := gsub(".*kSg\\.\\}\\}, ", "", worttrennung_pl)]
+d6[worttrennung_sg=="{{kSg.}}", silbenzahl := str_count(worttrennung_pl, "·")]
+d6[worttrennung_sg=="{{kSg.}}", silbenzahl := silbenzahl + 1] # warning message
+                                                              # b/c some are NA
+
+
 
 # add column indicating whether form is a noun ----------------------------
 d6[, flexion2 := gsub(".*Wortart\\|", "", flexion)]
@@ -216,9 +223,13 @@ d6[str_detect(flexion2, "Substantiv|onym|name|Name"), nomen := T]
 d6[!is.na(genus2), genus := paste(genus, genus2, sep="")]
 d6[!is.na(genus3), genus := paste(genus, genus3, sep="")]
 
+# unified column for Worttrennung
+d6[worttrennung_sg=="{{kSg.}}", worttrennung := worttrennung_pl]
+d6[worttrennung_sg!="{{kSg.}}", worttrennung := worttrennung_sg]
+
 
 # omit unnecessary columns & duplicates
-d7 <- d6[,.(Lexem=lexeme,Genus=genus,Worttrennung=worttrennung_sg,
+d7 <- d6[,.(Lexem=lexeme,Genus=genus,Worttrennung=worttrennung,
             IPA=ipa, Wortart=flexion2, 
             Nomen=nomen)]
 
@@ -233,8 +244,13 @@ d9 <- d8[Wortart=="Substantiv"]
 # in IPA column, take alternatives into account
 d9[grepl("oder \\{\\{Lautschrift", d9$IPA) & !grepl("\\{\\{Pl\\.\\}\\}", d9$IPA), IPA := gsub(" \\'?\\'?oder\\'?\\'? \\{\\{Lautschrift|}}", "", IPA)]
 
+
 # in IPA column, remove everything after comma
 d9[, IPA := gsub(",.*", "", IPA)]
+
+# in IPA column, find instances where there's something before {{IPA
+
+d9[grep("\\{\\{IPA", d9$IPA), IPA := gsub(".*?\\{\\{Lautschrift(\\?| )?\\|", "", IPA)]
 
 
 # detect words with multiple genders --------------------------------------
