@@ -1,0 +1,8 @@
+*.xlsx
+*.tar.gz
+*.xml.bz2
+*.tsv
+*.xml
+*.Rds
+.*
+!.gitignore
