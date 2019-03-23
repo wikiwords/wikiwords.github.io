@@ -13,12 +13,24 @@ Tinits, Peeter & Stefan Hartmann: WikiWords. A Wiktionary-based collection of li
 
 The WikiWords logo is based on the <a href="https://commons.wikimedia.org/wiki/File:WiktionaryEn.svg" target="_blank">Wiktionary logo</a> by Wikimedia Foundation, Inc., used and distributed here under a CC-BY-SA license.
 
+[WikinounsDE]{#wikinounsde}
+
 
 <br />
 
 ## Datasets
 
-### WikiNounsDe (German nouns)
+Currently WikiWords contains the following datasets:
+
+| Name          | Size (words)      | Size (MB)   | Language    | Based on dump from (date)
+| ------------- |:-----------------:|:-----------:|:-----------:|----------------------------:|
+| [WikiNounsDE]{#wikinounsde}   | 72,063            | 3.8         | German      | 2019-03-20                  |
+
+
+
+<br />
+
+### WikiNounsDe
 
 WikiNounsDe can be downloaded <a href="https://github.com/hartmast/WikiWords/raw/master/wikinouns_DE.csv" target="_blank">here</a> (3.8 MB). It is a simple csv sheet comprising 71,977 words in total and containing the following columns:
 * **Lexem**: the lexeme in question (nominative singular)
@@ -33,7 +45,7 @@ WikiNounsDe can be downloaded <a href="https://github.com/hartmast/WikiWords/raw
 
 ### WikiNounsDe processing resources
 
-The WikiNounsDe dataset was created from <a href="https://dumps.wikimedia.org/dewiktionary/20190301/dewiktionary-20190301-pages-articles.xml.bz2" target="_blank">this</a> Wiktionary dump using the R script wiktionary_process.R. To ensure that every word occurs only once, duplicate entries were manually checked (see check_duplicates_checked.csv). In the case of duplicates due to the coexistence of homographic native and non-native nouns, only the native variant was taken into account. If several native variants with different pronunciations co-exist, they were merged by considering both variants in the IPA column and seperating them by \|.
+The WikiNounsDe dataset was created from <a href="https://dumps.wikimedia.org/dewiktionary/20190301/dewiktionary-20190301-pages-articles.xml.bz2" target="_blank">this</a> Wiktionary dump using the R script wiktionary_process.R. To ensure that every word occurs only once, duplicate entries were merged in the columns "Worttrennung" and "IPA", separating various variants via \|.
 
 <br />
 <p align="center">

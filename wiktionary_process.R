@@ -32,7 +32,7 @@ library(stringi)
 # read and modify file ----------------------------------------------------
 
 # read file
-d <- fread("dewiktionary-20190301-pages-articles.xml",sep="~",header=F)
+d <- fread("dewiktionary-20190220-pages-articles-multistream.xml",sep="~",header=F)
 
 # set name of the (currently only) column
 names(d) <- "V1"
@@ -168,8 +168,8 @@ d4[,title:=str_remove(title,"\\<\\/title\\>")]
 d5 <- d4[,.(title,worttrennung=worttrennung_str,aussprache_IPA,genus,genus2,genus3,subsection=sprache,sprache=sprache2,flexion)]
 
 # get rid of bracket text in different columns
-d5[,subsection:=str_remove(subsection,"\\<text xml\\:space\\=\"preserve\"\\>")]
-d5[,title2:=trimws(str_extract(subsection, "[[:alpha:]|[:space:]\\-]+"))]
+d5[,subsection:=str_remove(title,"\\<text xml\\:space\\=\"preserve\"\\>")]
+d5[,title2:=trimws(str_extract(subsection, "[[:alnum:][:space:]\\.\\,\\-]+"))]
 d5[,genus := str_remove(genus,"\\|Genus( 1)?=")]
 d5[,genus2 := str_remove(genus2, "\\|Genus 2=")]
 d5[,genus3 := str_remove(genus3, "\\|Genus 3=")]
@@ -282,52 +282,31 @@ d9a <- d9a[!duplicated(d9a)]
 d10 <- rbind(d9a,d9b)
 
 
-# find remaining duplicates
-duplicate_lexemes <- d10[duplicated(d10$Lexem)]$Lexem
+# remove recurring false hits
+d10[, Worttrennung := gsub("\\{\\{kSg\\.\\}\\} \\{\\{Pl.\\}\\} ", "", Worttrennung)]
+d10[, Worttrennung := gsub("\\[.*|\\#.*|\\:.*|[0-9].*|[,;]? \\{.*", "", Worttrennung)]
+d10[, Worttrennung := gsub("<model>.*?</model>", "", Worttrennung)]
+d10[, IPA := gsub("<comment>.*?</comment>", "", IPA)]
+d10[, IPA := gsub("^\\:.*", "", IPA)]
+d10[, IPA := gsub(" \\(.*", "", IPA)]
+d10[, IPA := gsub("\\}\\}", "", IPA)]
+d10[, IPA := gsub("\\{\\{.*", "", IPA)]
+d10[, IPA := gsub("\\#.*", "", IPA)]
 
-# check
-# d10[Lexem %in% duplicate_lexemes] %>% write_csv("check_duplicates.csv")
 
-
-
-# merge with checked lexemes ----------------------------------------------
-
-# read in checked lexemes
-d_check <- fread("check_duplicates_checked.csv")
-
-# dataframe without duplicate lexemes
-d11a <- d10[!Lexem %in% duplicate_lexemes]
-
-# only checked items
-d_check <- d_check[keep=="y"]
-
-# remove keep column
-d_check[, keep := NULL]
-
-# bind
-d11 <- rbind(d11a, d_check)
-
-# replace " oder ..." in Worttrennung and IPA columns
-d11[, IPA := trimws(IPA)]
-d11[, Worttrennung := trimws(Worttrennung)]
-d11[, Worttrennung := gsub(" .*", "", Worttrennung)]
-d11[, IPA := gsub(" .*", "", IPA)]
-
-# re-add syllable length column
-d11[, Silbenzahl := str_count(Worttrennung, "·|-")]
-d11[, Silbenzahl := Silbenzahl + 1]
+# clean gender column -----------------------------------------------------
 
 # clean genus column
-d11[, Genus := gsub("\\{\\{.*?\\}\\}", "", Genus)]
-d11[, Genus := gsub("[^[:alpha:]]", "", Genus)]
-d11[, Genus := gsub("Schwedisch.*", "", Genus)]
-d11[, Genus := gsub("f+", "f", Genus)]
-d11[, Genus := gsub("m+", "m", Genus)]
-d11[, Genus := gsub("n+", "n", Genus)]
-d11[, Genus := gsub("[NOE]", "", Genus)]
+d10[, Genus := gsub("\\{\\{.*?\\}\\}", "", Genus)]
+d10[, Genus := gsub("[^[:alpha:]]", "", Genus)]
+d10[, Genus := gsub("Schwedisch.*", "", Genus)]
+d10[, Genus := gsub("f+", "f", Genus)]
+d10[, Genus := gsub("m+", "m", Genus)]
+d10[, Genus := gsub("n+", "n", Genus)]
+d10[, Genus := gsub("[NOE]", "", Genus)]
 
-# sort all with multiples genders alphabetically
-d11[, nchar := nchar(Genus)]
+# sort all with multiples genders alphabetically.....
+d10[, nchar := nchar(Genus)] # TODO: not needed any more
 
 # helper function for sorting alphabetically
 stri_alphabetic <- function(str) {
@@ -339,18 +318,104 @@ stri_alphabetic <- function(str) {
 }
 
 # sort alphabetically
-d11[, Genus := sapply(1:nrow(d11), function(i) stri_alphabetic(d11$Genus[i]))]
+d10[, Genus := sapply(1:nrow(d10), function(i) stri_alphabetic(d10$Genus[i]))]
 
 # remove non-{fmnx} characters
-d11[, Genus := gsub("[^fmnx]", "", Genus)]
+d10[, Genus := gsub("[^fmnx]", "", Genus)]
 
 # remove x if one of the others is present as well
-d11[, Genus := gsub(".*(?<=[mfn])x", "x", Genus, perl = T)]
+d10[, Genus := gsub(".*(?<=[mfn])x", "x", Genus, perl = T)]
 
 # again, unique values
-d11[, Genus := gsub("f+", "f", Genus)]
-d11[, Genus := gsub("m+", "m", Genus)]
-d11[, Genus := gsub("n+", "n", Genus)]
+d10[, Genus := gsub("f+", "f", Genus)]
+d10[, Genus := gsub("m+", "m", Genus)]
+d10[, Genus := gsub("n+", "n", Genus)]
+
+# remove rows without Lexem
+d10 <- d10[Lexem!=""]
+
+
+# find remaining duplicates
+duplicate_lexemes <- d10[duplicated(d10$Lexem)]$Lexem
+
+
+
+# remove duplicates automatically -----------------------------------------
+
+d10a <- d10[!Lexem %in% duplicate_lexemes] 
+ddup <- d10[Lexem %in% duplicate_lexemes]
+
+# paste duplicate lexemes together
+for(i in 1:length(duplicate_lexemes)) {
+  x <- ddup[Lexem==duplicate_lexemes[i]]
+  ddup[Lexem==duplicate_lexemes[i], Worttrennung := gsub("^\\||\\|$", "", paste(unique(x$Worttrennung), sep="", collapse="|"))]
+  ddup[Lexem==duplicate_lexemes[i], IPA := gsub("^\\||\\|$", "", paste(unique(x$IPA), sep="", collapse="|"))]
+  print(i)
+}
+
+# now find duplicate genders
+ddup <- ddup[!duplicated(ddup)]
+gvl <- ddup[duplicated(ddup$Lexem),]$Lexem
+
+ddupa <- ddup[Lexem %in% gvl]
+ddupb <- ddup[!Lexem %in% gvl]
+
+# add multiple genders to Genus column
+for(i in 1:length(gvl)) {
+  ddupa[Lexem==gvl[i], Genus := paste0(ddupa[Lexem==gvl[i]]$Genus, collapse="")]
+}
+
+# sort alphabetically
+ddupa[, Genus := sapply(1:nrow(ddupa), function(i) stri_alphabetic(ddupa$Genus[i]))]
+ddupa[, Genus := gsub("f+", "f", Genus)]
+ddupa[, Genus := gsub("m+", "m", Genus)]
+ddupa[, Genus := gsub("n+", "n", Genus)]
+
+# re-unite tables
+ddup <- rbind(ddupa, ddupb)
+ddup <- ddup[!duplicated(ddup)]
+
+
+# re-unite tables with and without duplicates
+d11 <- rbind(d10a, ddup)
+
+
+
+# LEGACY CODE:
+# in an early version, duplicates were corrected
+# manually, but this would be way too time-consuming,
+# especially when the project is extended to other
+# languages and datasets.
+
+
+# # merge with checked lexemes ----------------------------------------------
+# 
+# # read in checked lexemes
+# d_check <- fread("check_duplicates_checked.csv")
+# 
+# # dataframe without duplicate lexemes
+# d11a <- d10[!Lexem %in% duplicate_lexemes]
+# 
+# # only checked items
+# d_check <- d_check[keep=="y"]
+# 
+# # remove keep column
+# d_check[, keep := NULL]
+# 
+# # bind
+# d11 <- rbind(d11a, d_check)
+
+# replace " oder ..." in Worttrennung and IPA columns
+d11[, IPA := trimws(IPA)]
+d11[, Worttrennung := trimws(Worttrennung)]
+d11[, Worttrennung := gsub(" .*", "", Worttrennung)]
+d11[, IPA := gsub(" .*", "", IPA)]
+
+# re-add syllable length column
+d11[, Silbenzahl := str_count(Worttrennung, "·|-")]
+d11[, Silbenzahl := Silbenzahl + 1]
+
+
 
 
 # remove columns not needed any more
@@ -365,6 +430,19 @@ d11[, Worttrennung := gsub("\\{\\{.*?\\}\\}", "", Worttrennung)]
 
 # sort alphabetically
 setkey(d11, "Lexem")
+
+
+# set "Silbenzahl" to NA when there is nothing
+# in "Worttrennung"
+d11[Worttrennung=="", Silbenzahl := NA]
+
+# if word begins with alpha, beta, gamma,
+# add 1 to syllable length (because all three
+# are two-syllable words)
+d11[grep("^[αβγ]", Worttrennung), Silbenzahl := Silbenzahl + 1]
+
+
+
 
 # export
 # write_csv(d11, "wikinouns_DE.csv")
