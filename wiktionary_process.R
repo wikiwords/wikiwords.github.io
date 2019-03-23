@@ -1,5 +1,4 @@
 
-
 #########################################################
 ####################### WikiNouns #######################
 #########################################################
@@ -14,6 +13,13 @@
 
 # Code by Peeter Tinits, modified by Stefan Hartmann
 # CC-BY-SA-4.0
+
+
+# TODO: currently this script works with 11 different
+# dataframes to ensure that one can always go back to
+# a previous one. As soon as the script works reliably,
+# this can be dropped and we can work with one single
+# dataframe d.
 
 
 
@@ -305,8 +311,6 @@ d10[, Genus := gsub("m+", "m", Genus)]
 d10[, Genus := gsub("n+", "n", Genus)]
 d10[, Genus := gsub("[NOE]", "", Genus)]
 
-# sort all with multiples genders alphabetically.....
-d10[, nchar := nchar(Genus)] # TODO: not needed any more
 
 # helper function for sorting alphabetically
 stri_alphabetic <- function(str) {
@@ -419,7 +423,6 @@ d11[, Silbenzahl := Silbenzahl + 1]
 
 
 # remove columns not needed any more
-d11[, nchar := NULL]
 d11[, Nomen := NULL]
 d11[, Wortart := NULL]
 
