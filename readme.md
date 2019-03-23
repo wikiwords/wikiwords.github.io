@@ -13,9 +13,6 @@ Tinits, Peeter & Stefan Hartmann: WikiWords. A Wiktionary-based collection of li
 
 The WikiWords logo is based on the <a href="https://commons.wikimedia.org/wiki/File:WiktionaryEn.svg" target="_blank">Wiktionary logo</a> by Wikimedia Foundation, Inc., used and distributed here under a CC-BY-SA license.
 
-[WikinounsDE]{#wikinounsde}
-
-
 <br />
 
 ## Datasets
@@ -24,7 +21,7 @@ Currently WikiWords contains the following datasets:
 
 | Name          | Size (words)      | Size (MB)   | Language    | Based on dump from (date)
 | ------------- |:-----------------:|:-----------:|:-----------:|----------------------------:|
-| [WikiNounsDE]{#wikinounsde}   | 72,063            | 3.8         | German      | 2019-03-20                  |
+| [WikiNounsDE](#wikinounsde)   | 72,063            | 3.8         | German      | 2019-03-20                  |
 
 
 
