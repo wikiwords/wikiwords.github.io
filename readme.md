@@ -33,8 +33,8 @@ WikiNounsDe can be downloaded <a href="https://github.com/hartmast/WikiWords/raw
 * **Lexem**: the lexeme in question (nominative singular)
 * **Genus**: the grammatical gender of the lexeme in question. (f = feminine, m = masculine, n = neuter; lexemes that can have more than one gender are tagged as fm, fn, mn, etc.)
 * **IPA**: IPA transcription. In some cases, two transcriptions are given, separated by \|.
-* **Worttrennung**: Syllabification.
-* **Silbenzahl**: Number of syllables, automatically calculated from the syllabification column.
+* **Worttrennung**: Syllabification. Note that the syllabification represents the orthographic separation of words, which does not always match the prosodic one.
+* **Silbenzahl**: Number of syllables, automatically calculated from the syllabification column. <span style="color: #c52323"> **Caution**</span>: As mentioned above, the syllabification represents the orthographic word separation, which does not always match the prosodic one. For example, *Acker* is tagged as a one-syllable word because it is not usually split up in writing. Until a better solution is found, please check all entries in this column carefully when you use the database.
 
 <br />
 
