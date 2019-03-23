@@ -29,7 +29,7 @@ Currently WikiWords contains the following datasets:
 
 ### WikiNounsDe
 
-WikiNounsDe can be downloaded <a href="https://github.com/hartmast/WikiWords/raw/master/wikinouns_DE.csv" target="_blank">here</a> (3.8 MB). It is a simple csv sheet comprising 71,977 words in total and containing the following columns:
+WikiNounsDe can be downloaded <a href="https://github.com/hartmast/WikiWords/raw/master/wikinouns_DE.csv" target="_blank">here</a> (3.8 MB). It is a simple csv sheet containing the following columns:
 * **Lexem**: the lexeme in question (nominative singular)
 * **Genus**: the grammatical gender of the lexeme in question. (f = feminine, m = masculine, n = neuter; lexemes that can have more than one gender are tagged as fm, fn, mn, etc.)
 * **IPA**: IPA transcription. In some cases, two transcriptions are given, separated by \|.
