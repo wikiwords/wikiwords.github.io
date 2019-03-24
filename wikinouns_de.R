@@ -194,6 +194,9 @@ setnames(d6, "title2", "lexeme")
 # remove trailing : from "worttrennung" column
 d6[, worttrennung := gsub("^:", "", worttrennung)]
 
+# remove comments like "alte Rechtschreibung" etc. from "worttrennung" column
+d6[, worttrennung := gsub("\\'\\'.*?\\'\\'", "", worttrennung)]
+
 # split up worttrennung into singular and plural
 d6[, worttrennung_pl := worttrennung]
 d6[, worttrennung_sg := worttrennung]
